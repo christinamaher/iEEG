@@ -10,5 +10,3 @@ All signal processing conducted using Saez Laboratory's [LFPAnalysis](https://gi
 **Regression scripts**:
 * Conduct simple linear and mixed effects regression using behavioral and neural data:`regression.R`
 
-**Visualization scripts**:
-* Create visualizations (bargraph and lineplots):`visualize_regression_results.ipynb`
