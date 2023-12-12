@@ -34,6 +34,23 @@ best_model <- which.min(c(model1_bic,model2_bic,model3_bic,model4_bic)) # lowest
 cat("The best fitting model is:", best_model)
 cat("The R2 of the best fitting model is:", c(model1_r2,model2_r2,model3_r2,model4_r2)[best_model])
 
+
+
+# instead of BIC, let's calculate a likelihood ratio and then compare using a chi square test to see if the inclusion of additional variables in 
+# the full model significantly improves model fit compared to a reduced model
+
+full_model <- lmer(power ~  (1|elec_id) + rpe + r + rd + (0 + rpe +  r + rd |elec_id), REML=TRUE, data=df)
+reduced_model <- lmer(power ~  (1|elec_id) + rpe + r + rd + (0 + rpe +  r + rd |elec_id), REML=TRUE, data=df)
+lr_test_stat <- 2 * (logLik(full_model) - logLik(reduced_model))
+lr_test_df <- attr(logLik(full_model), "df") - attr(logLik(reduced_model), "df")
+lr_test_p_value <- pchisq(lr_test_stat, df = lr_test_df, lower.tail = FALSE)
+
+if (lr_test_p_value < 0.05){
+  print("The full model provides a significantly better fit to the data compared to the reduced model")
+} else{
+  print("The full model does not provide a significantly better fit to the data compared to the reduced model. The additional variable is not necessary for inclusion.")
+}
+
 # TIME RESOLVED REGRESSION
 df<-read.csv('/Users/christinamaher/Desktop/CODE_EXAMPLE/ofc_time.csv', header = TRUE) # data frame containing one HG power value per timepoints (-1.5s to 1.5s around choice/outcome) per OFC electrode and associated model-based/model-agnostic regressors of interest (expected value, reward prediction error, reward, and relevant dimension)
 df <- subset(df, condition == "hint") # only certain trial types for this analysis
