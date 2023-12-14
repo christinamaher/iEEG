@@ -39,12 +39,13 @@ cat("The R2 of the best fitting model is:", c(model1_r2,model2_r2,model3_r2,mode
 # instead of BIC, let's calculate a likelihood ratio and then compare using a chi square test to see if the inclusion of additional variables in 
 # the full model significantly improves model fit compared to a reduced model
 
-full_model <- lmer(power ~  (1|elec_id) + rpe + r + rd + (0 + rpe +  r + rd |elec_id), REML=TRUE, data=df)
+full_model <- lmer(power ~  (1|elec_id) + rpe + r + rd + ev + (0 + rpe +  r + rd + ev |elec_id), REML=TRUE, data=df)
 reduced_model <- lmer(power ~  (1|elec_id) + rpe + r + rd + (0 + rpe +  r + rd |elec_id), REML=TRUE, data=df)
 lr_test_stat <- 2 * (logLik(full_model) - logLik(reduced_model))
 lr_test_df <- attr(logLik(full_model), "df") - attr(logLik(reduced_model), "df")
 lr_test_p_value <- pchisq(lr_test_stat, df = lr_test_df, lower.tail = FALSE)
 
+# the biggest test statistic - this is the information that is "most salient" in a given region 
 if (lr_test_p_value < 0.05){
   print("The full model provides a significantly better fit to the data compared to the reduced model")
 } else{
@@ -57,7 +58,6 @@ df <- subset(df, condition == "hint") # only certain trial types for this analys
 elec <- c()
 r2 <- c()
 timepoint <- c()
-time <- c()
 pvalue <- c()
 
 for (e in 1:length(unique(df$elec_id))) { 
@@ -68,13 +68,9 @@ for (e in 1:length(unique(df$elec_id))) {
     model_details <- summary(model) 
     p_temp <- model_details$coefficients[8]
     r2_temp <- model_details$r.squared
-    r2 <- c(r2,r2_temp)
+    r2 <- c(r2,r2_temp) # save the R2 for plotting
     elec <- c(elec,e)
-    timepoint <- c(timepoint,t)
-    time <- c(time,unique(elec_data$X1)[t])
-    pvalue <- c(pvalue,p_temp)
+    timepoint <- c(timepoint,t) # save the timepoint for plotting
+    pvalue <- c(pvalue,p_temp) # save regression p-value to determine significance (determine bonferroni adjusted p-value cut-off based on the number tests)
   }
 }
-
-e=1
-elec_data[elec_data$time == unique(elec_data$time)[t], ]
